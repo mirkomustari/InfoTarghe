@@ -3,37 +3,37 @@
 3    package="com.example.infotarghe.detection.tflite.test" >
 4
 5    <uses-sdk
-5-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:5:5-74
+5-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:5:5-74
 6        android:minSdkVersion="21"
-6-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:5:15-41
+6-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:5:15-41
 7        android:targetSdkVersion="30" />
-7-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:5:42-71
+7-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:5:42-71
 8
 9    <instrumentation
-9-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:11:5-15:94
+9-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:11:5-15:94
 10        android:name="androidx.test.runner.AndroidJUnitRunner"
-10-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:11:22-76
+10-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:11:22-76
 11        android:functionalTest="false"
-11-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:14:22-52
+11-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:14:22-52
 12        android:handleProfiling="false"
-12-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:13:22-53
+12-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:13:22-53
 13        android:label="Tests for com.example.infotarghe.detection.tflite.test"
-13-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:15:22-92
+13-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:15:22-92
 14        android:targetPackage="com.example.infotarghe.detection.tflite.test" />
-14-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:12:22-90
+14-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:12:22-90
 15
 16    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 17    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 18    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 19
 20    <application
-20-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:7:5-9:19
+20-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:7:5-9:19
 21        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 21-->[androidx.core:core:1.1.0] C:\Users\Mirko\.gradle\caches\transforms-3\a02403476945a9deb64f3a9a0d34cf80\transformed\core-1.1.0\AndroidManifest.xml:24:18-86
 22        android:debuggable="true" >
 23        <uses-library android:name="android.test.runner" />
-23-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:8:9-60
-23-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest8170034858178547939.xml:8:23-57
+23-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:8:9-60
+23-->S:\PROGETTO\InfoTarghe\lib_task_api\build\intermediates\tmp\manifest\androidTest\debug\tempFile1ProcessTestManifest13341846367255396496.xml:8:23-57
 24    </application>
 25
 26</manifest>
