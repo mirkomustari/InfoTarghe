@@ -30,6 +30,7 @@ import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.infotarghe.R;
@@ -38,6 +39,10 @@ import com.example.infotarghe.env.BorderedText;
 import com.example.infotarghe.env.ImageUtils;
 import com.example.infotarghe.env.Logger;
 import com.example.infotarghe.tracking.MultiBoxTracker;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import org.tensorflow.lite.examples.detection.tflite.Detector;
 import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
@@ -46,6 +51,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -87,7 +95,7 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
 
   private BorderedText borderedText;
 
-  private ImageView ocrPreviewWindow;
+  private TextView ocrPreviewWindow;
 
 
   @Override
@@ -156,6 +164,75 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
     tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation);
   }
 
+  private void recognizeTextFromBitmap(Bitmap bitmap) {
+    InputImage image = InputImage.fromBitmap(bitmap, 0);
+
+    TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+
+    recognizer.process(image)
+            .addOnSuccessListener(result -> {
+              String recognizedText = result.getText(); // Testo riconosciuto
+              String filteredText = filterPlateText(recognizedText); // Filtra il testo
+
+              if (!filteredText.isEmpty()) {
+                if (isPlateAllowed(filteredText)) {
+                  updateOCRWindow("Targa valida: " + filteredText); // Mostra la targa valida
+                } else {
+                  updateOCRWindow("Formato non valido: " + filteredText); // Mostra il testo filtrato
+                }
+              } else {
+                updateOCRWindow("Nessun testo rilevato.");
+              }
+            })
+            .addOnFailureListener(e -> {
+              LOGGER.e("Errore OCR: " + e.getMessage());
+              updateOCRWindow("Errore nel riconoscimento del testo.");
+            });
+  }
+
+
+  private void updateOCRWindow(String text) {
+    getActivity().runOnUiThread(() -> {
+      TextView ocrPreviewWindow = getView().findViewById(R.id.ocr_preview_window);
+      if (ocrPreviewWindow != null) {
+        ocrPreviewWindow.setText(text); // Aggiorna il testo nel TextView
+      } else {
+        LOGGER.e("OCR Preview Window non trovato.");
+      }
+    });
+  }
+
+  private String filterPlateText(String text) {
+    // Rimuovi tutti i caratteri non alfanumerici
+    text = text.replaceAll("[^A-Z0-9]", "");
+    // Converte il testo in maiuscolo
+    return text.toUpperCase();
+  }
+
+
+  private boolean isPlateAllowed(String text) {
+    // Filtra il testo per ottenere una versione pulita
+    String filteredText = filterPlateText(text);
+
+    // Espressione regolare per il formato di targa europea
+    String platePattern = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+    Pattern pattern = Pattern.compile(platePattern, Pattern.CASE_INSENSITIVE);
+
+    // Cerca un match con il pattern
+    Matcher matcher = pattern.matcher(filteredText);
+    if (matcher.find()) {
+      LOGGER.i("Targa valida riconosciuta: " + filteredText);
+      return true; // È una targa valida
+    }
+
+    LOGGER.e("Nessuna targa valida trovata nel testo filtrato: " + filteredText);
+    return false;
+  }
+
+
+
+
+
   @Override
   protected void processImage() {
     ++timestamp;
@@ -211,25 +288,24 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
 
           // Verifica larghezza e altezza del bounding box per il ritaglio
           if (locationForCrop.width() > 0 && locationForCrop.height() > 0) {
-            Bitmap boundingBoxBitmap = Bitmap.createBitmap(
-                    croppedBitmap,
-                    (int) Math.max(locationForCrop.left, 0),
-                    (int) Math.max(locationForCrop.top, 0),
-                    (int) Math.min(locationForCrop.width(), croppedBitmap.getWidth() - locationForCrop.left),
-                    (int) Math.min(locationForCrop.height(), croppedBitmap.getHeight() - locationForCrop.top)
-            );
+            try {
+              Bitmap boundingBoxBitmap = Bitmap.createBitmap(
+                      croppedBitmap,
+                      (int) Math.max(locationForCrop.left, 0),
+                      (int) Math.max(locationForCrop.top, 0),
+                      (int) Math.min(locationForCrop.width(), croppedBitmap.getWidth() - locationForCrop.left),
+                      (int) Math.min(locationForCrop.height(), croppedBitmap.getHeight() - locationForCrop.top)
+              );
 
-            // Deforma il ritaglio per adattarlo all'ImageView OCR
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(boundingBoxBitmap, 200, 50, false);
+              // Deforma il ritaglio per adattarlo al TextView OCR
+              Bitmap scaledBitmap = Bitmap.createScaledBitmap(boundingBoxBitmap, 200, 50, false);
 
-            // Mostra l'immagine ritagliata nella finestra OCR
-            getActivity().runOnUiThread(() -> {
-              if (ocrPreviewWindow != null) {
-                ocrPreviewWindow.setImageBitmap(scaledBitmap);
-              } else {
-                LOGGER.e("ocrPreviewWindow è null, impossibile aggiornare l'immagine.");
-              }
-            });
+              // Passa il ritaglio all'OCR per il riconoscimento del testo
+              recognizeTextFromBitmap(scaledBitmap);
+
+            } catch (IllegalArgumentException e) {
+              LOGGER.e("Errore nel ritaglio del bounding box: " + e.getMessage());
+            }
           } else {
             LOGGER.e("Bounding box non valido per il ritaglio: " + locationForCrop.toString());
           }
@@ -243,6 +319,7 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
           ));
         }
       }
+
 
 // Passa i risultati trasformati al tracker
       tracker.trackResults(mappedRecognitions, currTimestamp);
