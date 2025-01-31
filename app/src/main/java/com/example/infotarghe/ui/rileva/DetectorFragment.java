@@ -29,6 +29,7 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.infotarghe.R;
@@ -85,6 +86,9 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
   private MultiBoxTracker tracker;
 
   private BorderedText borderedText;
+
+  private ImageView ocrPreviewWindow;
+
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -158,97 +162,124 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
     final long currTimestamp = timestamp;
     trackingOverlay.postInvalidate();
 
-    // Skip processing if another detection is ongoing.
     if (computingDetection) {
       readyForNextImage();
       return;
     }
     computingDetection = true;
-    LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
 
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
-
     readyForNextImage();
 
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
 
-    // Save the preview bitmap for debugging purposes (if enabled).
-    if (SAVE_PREVIEW_BITMAP) {
-      ImageUtils.saveBitmap(croppedBitmap);
-    }
+    runInBackground(() -> {
+      final long startTime = SystemClock.uptimeMillis();
+      final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
+      lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
-    runInBackground(
-            new Runnable() {
-              @Override
-              public void run() {
-                LOGGER.i("Running detection on image " + currTimestamp);
-                final long startTime = SystemClock.uptimeMillis();
-                final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
-                lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+      cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+      final Canvas canvas1 = new Canvas(cropCopyBitmap);
+      final Paint paint = new Paint();
+      paint.setColor(Color.RED);
+      paint.setStyle(Paint.Style.STROKE);
+      paint.setStrokeWidth(2.0f);
 
-                cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                final Canvas canvas = new Canvas(cropCopyBitmap);
-                final Paint paint = new Paint();
-                paint.setColor(Color.RED);
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(2.0f);
+      float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+      final List<Detector.Recognition> mappedRecognitions = new ArrayList<>();
 
-                float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                switch (MODE) {
-                  case TF_OD_API:
-                    minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                    break;
-                }
+      for (final Detector.Recognition result : results) {
+        final RectF location = result.getLocation();
 
-                final List<Detector.Recognition> mappedRecognitions = new ArrayList<>();
+        if (location != null && result.getConfidence() >= MINIMUM_CONFIDENCE_TF_OD_API) {
+          // Log delle coordinate originali (crop space)
+          LOGGER.i("Bounding box originale (crop space): " + location.toString());
 
-                for (final Detector.Recognition result : results) {
-                  final RectF location = result.getLocation();
+          // Trasformiamo le coordinate nel frame space (usate per il tracker e l'overlay)
+          cropToFrameTransform.mapRect(location);
 
-                  if (location != null && result.getConfidence() >= minimumConfidence) {
-                    // Commentato: Salvataggio delle informazioni relative ai risultati nella mappa
-                    // if (shoppingList.keySet().contains(result.getTitle().toLowerCase(Locale.ROOT))
-                    //     && shoppingList.get(result.getTitle().toLowerCase(Locale.ROOT)) == false) {
-                    //   Toast.makeText(getActivity(), "Trovato prodotto " + result.getTitle() + "!",
-                    //       Toast.LENGTH_LONG).show();
-                    //   shoppingList.replace(result.getTitle().toLowerCase(Locale.ROOT), true);
-                    // }
+          // Log delle coordinate trasformate
+          LOGGER.i("Bounding box trasformato (frame space): " + location.toString());
 
-                    // Disegna il bounding box
-                    canvas.drawRect(location, paint);
+          // Crea una copia delle coordinate per il ritaglio
+          RectF locationForCrop = new RectF(location);
+          frameToCropTransform.mapRect(locationForCrop);
 
-                    // Trasforma le coordinate del bounding box
-                    cropToFrameTransform.mapRect(location);
-                    result.setLocation(location);
-                    mappedRecognitions.add(result);
-                  }
-                }
+          // Log delle coordinate per il ritaglio
+          LOGGER.i("Bounding box per il ritaglio (crop space): " + locationForCrop.toString());
 
-                tracker.trackResults(mappedRecognitions, currTimestamp);
-                trackingOverlay.postInvalidate();
+          // Verifica larghezza e altezza del bounding box per il ritaglio
+          if (locationForCrop.width() > 0 && locationForCrop.height() > 0) {
+            Bitmap boundingBoxBitmap = Bitmap.createBitmap(
+                    croppedBitmap,
+                    (int) Math.max(locationForCrop.left, 0),
+                    (int) Math.max(locationForCrop.top, 0),
+                    (int) Math.min(locationForCrop.width(), croppedBitmap.getWidth() - locationForCrop.left),
+                    (int) Math.min(locationForCrop.height(), croppedBitmap.getHeight() - locationForCrop.top)
+            );
 
-                computingDetection = false;
+            // Deforma il ritaglio per adattarlo all'ImageView OCR
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(boundingBoxBitmap, 200, 50, false);
 
-                getActivity().runOnUiThread(
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            showFrameInfo(previewWidth + "x" + previewHeight);
-                            showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
-                            showInference(lastProcessingTimeMs + "ms");
-                          }
-                        });
+            // Mostra l'immagine ritagliata nella finestra OCR
+            getActivity().runOnUiThread(() -> {
+              if (ocrPreviewWindow != null) {
+                ocrPreviewWindow.setImageBitmap(scaledBitmap);
+              } else {
+                LOGGER.e("ocrPreviewWindow è null, impossibile aggiornare l'immagine.");
               }
             });
+          } else {
+            LOGGER.e("Bounding box non valido per il ritaglio: " + locationForCrop.toString());
+          }
+
+          // Aggiungi il bounding box trasformato alla lista per il tracker
+          mappedRecognitions.add(new Detector.Recognition(
+                  result.getId(),
+                  result.getTitle(),
+                  result.getConfidence(),
+                  location
+          ));
+        }
+      }
+
+// Passa i risultati trasformati al tracker
+      tracker.trackResults(mappedRecognitions, currTimestamp);
+      trackingOverlay.postInvalidate();
+
+
+
+      tracker.trackResults(mappedRecognitions, currTimestamp);
+      trackingOverlay.postInvalidate();
+      computingDetection = false;
+
+      getActivity().runOnUiThread(() -> {
+        showFrameInfo(previewWidth + "x" + previewHeight);
+        showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
+        showInference(lastProcessingTimeMs + "ms");
+      });
+    });
   }
+
 
   @Override
   public synchronized void onResume() {
     super.onResume();
-    // Allow the detection to restart after pausing
     computingDetection = false;
+
+    // Inizializza l'ImageView quando il fragment è attivo
+    if (getView() != null) {
+      ocrPreviewWindow = getView().findViewById(R.id.ocr_preview_window);
+
+      if (ocrPreviewWindow == null) {
+        LOGGER.e("ocrPreviewWindow is null! Verifica che l'ID sia corretto nel layout XML.");
+      } else {
+        LOGGER.i("ocrPreviewWindow inizializzato correttamente.");
+      }
+    }
   }
+
 
   @Override
   protected int getLayoutId() {
