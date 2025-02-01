@@ -176,19 +176,20 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
 
               if (!filteredText.isEmpty()) {
                 if (isPlateAllowed(filteredText)) {
-                  updateOCRWindow("Targa valida: " + filteredText); // Mostra la targa valida
+                  updateOCRWindow(filteredText); // Mostra solo la targa valida
                 } else {
-                  updateOCRWindow("Formato non valido: " + filteredText); // Mostra il testo filtrato
+                  updateOCRWindow("ERROR"); // Scrive "ERROR" se il formato non è valido
                 }
               } else {
-                updateOCRWindow("Nessun testo rilevato.");
+                updateOCRWindow("ERROR"); // Nessun testo rilevato viene trattato come errore
               }
             })
             .addOnFailureListener(e -> {
               LOGGER.e("Errore OCR: " + e.getMessage());
-              updateOCRWindow("Errore nel riconoscimento del testo.");
+              updateOCRWindow("ERROR"); // Errore nel riconoscimento viene trattato come errore
             });
   }
+
 
 
   private void updateOCRWindow(String text) {
