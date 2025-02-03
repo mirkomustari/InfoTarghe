@@ -194,7 +194,7 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
                   viewModel.incrementInvalidPlates();
                 }
               } else {
-                updateOCRWindow("Nessun testo rilevato.");
+                updateOCRWindow("NO TEXT");
                 viewModel.incrementInvalidPlates();
               }
             })

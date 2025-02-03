@@ -19,7 +19,6 @@ import com.example.infotarghe.databinding.FragmentHomeBinding;
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
-    private SharedViewModel sharedViewModel;
     private FragmentHomeBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -30,13 +29,11 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
+        // Osserva il testo dal ViewModel e impostalo nella descrizione
+        homeViewModel.getText().observe(getViewLifecycleOwner(), text -> {
+            binding.textMenuDescription.setText(text);
         });
+
         return root;
     }
 

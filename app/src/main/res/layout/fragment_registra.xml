@@ -43,7 +43,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:background="#EEEEFF"
+        android:background="@android:color/white"
         android:elevation="4dp"
         android:padding="16dp">
 

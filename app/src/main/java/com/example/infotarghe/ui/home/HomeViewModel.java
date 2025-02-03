@@ -10,9 +10,8 @@ public class HomeViewModel extends ViewModel {
 
     public HomeViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("BENVENUTI IN INFOTARGHE\n\nProgetto Sistemi Digitali M\n" +
-                "di Mirko Mustari e Marco Di Silvio\n\n" +
-                "ISTRUZIONI:\n'Scanner' per scannerizzare le targhe.\n'Targhe' per visualizzare le targhe rilevate");
+        // Descrizioni per il MENU
+        mText.setValue("SCANNER per scannerizzare le targhe\n\nTARGHE per visualizzare le targhe rilevate");
     }
 
     public LiveData<String> getText() {
