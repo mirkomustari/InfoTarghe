@@ -41,6 +41,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.infotarghe.ObjectDetection.CameraConnectionFragment;
 import com.example.infotarghe.ObjectDetection.LegacyCameraConnectionFragment;
 import com.example.infotarghe.R;
+import com.example.infotarghe.Rilevazione;
 import com.example.infotarghe.SharedViewModel;
 
 import com.example.infotarghe.databinding.TfeOdActivityCameraBinding;
@@ -106,16 +107,21 @@ public abstract class CameraFragment extends androidx.fragment.app.Fragment
       requestPermission();
     }
 
-    // Inizializza il ViewModel
-    sharedViewModel = new ViewModelProvider(getActivity()).get(SharedViewModel.class);
+    // Ottieni il ViewModel
+    SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-    // Ottieni la lista di targhe dal ViewModel
-    List<Targa> plateList = sharedViewModel.getPlateList();
+// Osserva le targhe rilevate e aggiorna quando cambiano
+    sharedViewModel.getPlateRilevazioniLiveData().observe(getViewLifecycleOwner(), plateMap -> {
+      if (plateMap != null) {
+        List<Rilevazione> plateList = new ArrayList<>(plateMap.values());
 
-    // Loggare le targhe con data e probabilità
-    for (Targa targa : plateList) {
-      LOGGER.d(targa.toString()); // Esempio: stampa ogni elemento della lista
-    }
+        // Ora hai la lista delle rilevazioni, puoi usarla per aggiornare l'interfaccia
+        for (Rilevazione r : plateList) {
+          LOGGER.i("Targa: " + r.getPlateNumber() + ", rilevata " + r.getCount() + " volte.");
+        }
+      }
+    });
+
 
     // Configura la UI
     binding = TfeOdActivityCameraBinding.inflate(inflater, container, false);

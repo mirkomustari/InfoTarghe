@@ -1,4 +1,4 @@
-#Fri Jan 31 17:49:28 CET 2025
+#Mon Feb 03 12:28:01 CET 2025
 base.0=S\:\\PROGETTO\\InfoTarghe\\lib_task_api\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
 base.1=S\:\\PROGETTO\\InfoTarghe\\lib_task_api\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\0\\classes.dex
 base.2=S\:\\PROGETTO\\InfoTarghe\\lib_task_api\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex

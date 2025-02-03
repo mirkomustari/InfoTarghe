@@ -33,7 +33,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.infotarghe.R;
+import com.example.infotarghe.SharedViewModel;
 import com.example.infotarghe.customview.OverlayView;
 import com.example.infotarghe.env.BorderedText;
 import com.example.infotarghe.env.ImageUtils;
@@ -166,29 +169,46 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
 
   private void recognizeTextFromBitmap(Bitmap bitmap) {
     InputImage image = InputImage.fromBitmap(bitmap, 0);
-
     TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
 
     recognizer.process(image)
             .addOnSuccessListener(result -> {
-              String recognizedText = result.getText(); // Testo riconosciuto
-              String filteredText = filterPlateText(recognizedText); // Filtra il testo
+              String recognizedText = result.getText();
 
-              if (!filteredText.isEmpty()) {
-                if (isPlateAllowed(filteredText)) {
-                  updateOCRWindow(filteredText); // Mostra solo la targa valida
+              // Controlla che il Fragment sia ancora attivo prima di accedere al ViewModel
+              if (!isAdded()) return;
+
+              SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+              if (!recognizedText.isEmpty()) {
+                if (isPlateAllowed(recognizedText)) {
+                  updateOCRWindow(recognizedText);
+
+                  // Aggiungi la targa valida al ViewModel
+                  long timestamp = System.currentTimeMillis();
+                  viewModel.addValidPlate(recognizedText, timestamp);
                 } else {
-                  updateOCRWindow("ERROR"); // Scrive "ERROR" se il formato non è valido
+                  updateOCRWindow("ERROR");
+
+                  // Incrementa il contatore di targhe non valide
+                  viewModel.incrementInvalidPlates();
                 }
               } else {
-                updateOCRWindow("ERROR"); // Nessun testo rilevato viene trattato come errore
+                updateOCRWindow("Nessun testo rilevato.");
+                viewModel.incrementInvalidPlates();
               }
             })
             .addOnFailureListener(e -> {
               LOGGER.e("Errore OCR: " + e.getMessage());
-              updateOCRWindow("ERROR"); // Errore nel riconoscimento viene trattato come errore
+              updateOCRWindow("Errore nel riconoscimento del testo.");
+
+              // Controlla che il Fragment sia ancora attivo prima di accedere al ViewModel
+              if (!isAdded()) return;
+              
+              new ViewModelProvider(requireActivity()).get(SharedViewModel.class).incrementInvalidPlates();
             });
   }
+
 
 
 

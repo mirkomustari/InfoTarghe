@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="10"
+    android:padding="8dp">
+
+    <!-- Colonna Targa -->
+    <TextView
+        android:id="@+id/plateNumberTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:gravity="start"
+        android:text="Targa"
+        android:textColor="#000000"
+        android:textSize="14sp" />
+
+    <!-- Colonna Occorrenze -->
+    <TextView
+        android:id="@+id/countTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:gravity="center"
+        android:text="Occorrenze"
+        android:textColor="#000000"
+        android:textSize="14sp" />
+
+    <!-- Colonna Data e Ora -->
+    <TextView
+        android:id="@+id/timestampTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="5"
+        android:gravity="end"
+        android:text="Data e Ora"
+        android:textColor="#000000"
+        android:textSize="14sp" />
+</LinearLayout>
