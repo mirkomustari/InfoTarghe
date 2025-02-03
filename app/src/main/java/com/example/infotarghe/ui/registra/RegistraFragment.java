@@ -80,7 +80,7 @@ public class RegistraFragment extends Fragment {
         int totalInvalid = sharedViewModel.getTotalInvalidPlates();
 
         String summary = String.format(Locale.getDefault(),
-                "Totale OCR: %d\nTarghe valide: %d\nTarghe non valide: %d",
+                "Rilevamenti totali: %d\nLetture OCR idonee: %d\nLetture OCR non idonee: %d",
                 totalOCR, totalValid, totalInvalid);
 
         summaryTextView.setText(summary);

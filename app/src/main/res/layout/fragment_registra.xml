@@ -32,7 +32,7 @@
             android:id="@+id/summaryTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Totale OCR: 0\nTarghe valide: 0\nTarghe non valide: 0"
+            android:text="Rilevamenti totali: 0\nLetture OCR idonee: 0\nLetture OCR non idonee: 0"
             android:textSize="16sp"
             android:textColor="#000000" />
     </LinearLayout>

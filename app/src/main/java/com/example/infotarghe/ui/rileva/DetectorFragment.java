@@ -181,12 +181,12 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
               SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
               if (!recognizedText.isEmpty()) {
-                if (isPlateAllowed(recognizedText)) {
-                  updateOCRWindow(recognizedText);
+                String filteredText = filterPlateText(recognizedText); // Filtra il testo
 
-                  // Aggiungi la targa valida al ViewModel
+                if (isPlateAllowed(recognizedText)) {
+                  updateOCRWindow(filteredText); // Mostra il testo filtrato nell'anteprima OCR
                   long timestamp = System.currentTimeMillis();
-                  viewModel.addValidPlate(recognizedText, timestamp);
+                  viewModel.addValidPlate(filteredText, timestamp); // Usa il testo filtrato
                 } else {
                   updateOCRWindow("ERROR");
 
@@ -223,25 +223,39 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
     });
   }
 
+  /**
+   * Il seguente metodo filtra il testo fornito per eliminare qualsiasi carattere che non sia alfanumerico
+   * e converte tutti i caratteri in maiuscolo.
+   *Motivo:
+   * - Le targhe automobilistiche valide seguono un formato alfanumerico standard, composto da lettere
+   *   e numeri senza spazi o simboli speciali.
+   * - Questo metodo standardizza il testo per garantire che il confronto con il pattern sia accurato.
+   *
+   * @param text Il testo grezzo da filtrare.
+   * @return Una stringa contenente solo caratteri alfanumerici in maiuscolo.
+   */
   private String filterPlateText(String text) {
-    // Rimuovi tutti i caratteri non alfanumerici
-    text = text.replaceAll("[^A-Z0-9]", "");
-    // Converte il testo in maiuscolo
-    return text.toUpperCase();
+    if (text == null) {
+      return ""; // Restituisci stringa vuota se il testo è null
+    }
+    // Rimuovi tutto ciò che non è una lettera o un numero, e trasforma in maiuscolo
+    return text.replaceAll("[^A-Z0-9]", "").toUpperCase();
   }
 
 
   private boolean isPlateAllowed(String text) {
     // Filtra il testo per ottenere una versione pulita
     String filteredText = filterPlateText(text);
+    LOGGER.i("Testo originale dall'OCR: " + text);
+    LOGGER.i("Testo filtrato per isPlateAllowed: " + filteredText);
 
     // Espressione regolare per il formato di targa europea
     String platePattern = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
-    Pattern pattern = Pattern.compile(platePattern, Pattern.CASE_INSENSITIVE);
+    Pattern pattern = Pattern.compile(platePattern);
 
     // Cerca un match con il pattern
     Matcher matcher = pattern.matcher(filteredText);
-    if (matcher.find()) {
+    if (matcher.matches()) { // Usa .matches() per verificare tutta la stringa
       LOGGER.i("Targa valida riconosciuta: " + filteredText);
       return true; // È una targa valida
     }
@@ -249,8 +263,6 @@ public class DetectorFragment extends CameraFragment implements OnImageAvailable
     LOGGER.e("Nessuna targa valida trovata nel testo filtrato: " + filteredText);
     return false;
   }
-
-
 
 
 
